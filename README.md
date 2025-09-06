@@ -1,0 +1,2 @@
+# kafka-homework
+OTUS practics
