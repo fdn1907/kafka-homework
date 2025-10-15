@@ -27,19 +27,60 @@
 Создаем продюсер в отдельном классе KafkaProducer, в настройках для транзакций добавляем `TRANSACTIONAL_ID_CONFIG`
 
 ```java
-        Map<String, Object> producerConfig = Map.of(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-                ProducerConfig.ACKS_CONFIG, "all",
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-                ProducerConfig.TRANSACTIONAL_ID_CONFIG, "transactionId"
-        );
+kafkaProducer.initTransactions();
+        kafkaProducer.beginTransaction();
+        for (int i = 0; i < 5; i++) {
+log.info("отправка сообшения id {} в topic1", i);
+            kafkaProducer.send(new ProducerRecord<>("topic1", "topic1-всем привет" + i));
+kafkaProducer.send(new ProducerRecord<>("topic2", "topic2-всем привет" + i));
+}
+
+kafkaProducer.commitTransaction();
+log.info("коммитим транзакцию");
 ```
 
-Отправляем сообщения в оба топика и коммитим их.
-Далее отправляем сообщения в оба топика и отказываем транзакцию.
-В итоге видим только сообщения, которые прошли с коммитом, а те, которые были откачены в транзакции - не видим.
+Отправляем по 5 сообщений в оба топика и коммитим их.
+
+```java
+producer2.initTransactions();
+producer2.beginTransaction();
+for (int i = 0; i < 2; i++) {
+    log.info("Отсылаем сообщение id {} в топики и далее откатим их", i);
+    producer2.send(new ProducerRecord<>("topic1", "topic1 message-откатим транзакцию" + i));
+    producer2.send(new ProducerRecord<>("topic2", "topic2 message-откатим транзакцию" + i));
+}
+producer2.flush();
+producer2.abortTransaction();
+log.info("send и далее abort abortTransaction");
+```
+
+Видим, что в обоих топиках есть отправленние сообщения.
+
 topic-1
 ![img2.png](img2.png)
 topic-2
 ![img3.png](img3.png)
+
+Далее отправляем по 2 сообщения в оба топика и откатываем транзакцию.
+
+```java
+roducer2.initTransactions();
+producer2.beginTransaction();
+for (int i = 0; i < 2; i++) {
+    log.info("Отсылаем сообщение id {} в топики и далее откатим их", i);
+    producer2.send(new ProducerRecord<>("topic1", "topic1 message-откатим транзакцию" + i));
+    producer2.send(new ProducerRecord<>("topic2", "topic2 message-откатим транзакцию" + i));
+}
+producer2.flush();
+producer2.abortTransaction();
+log.info("send и далее abort abortTransaction");
+```
+
+Смотрим результат - откаченных сообщений в топиках не появилось.
+
+topic-1
+![img4.png](img4.png)
+topic-2
+![img5.png](img5.png)
+
+

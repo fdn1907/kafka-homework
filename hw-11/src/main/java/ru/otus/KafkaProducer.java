@@ -61,7 +61,7 @@ public class KafkaProducer {
                 producer2.flush();
 
                 producer2.abortTransaction();
-                log.info("commit и далее abort abortTransaction");
+                log.info("send и далее abort abortTransaction");
 
             }
 
