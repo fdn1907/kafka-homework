@@ -21,7 +21,7 @@
 Запускаем 1 экземпляр kafka на порту 9092 и для контроля kafdrop на порту 9005
 Создаем 2 топика
 
-![img1.png](img1.png)
+![img10.png](img10.png)
 
 
 Создаем продюсер в отдельном классе KafkaProducer, в настройках для транзакций добавляем `TRANSACTIONAL_ID_CONFIG`
@@ -61,6 +61,13 @@ topic-1
 topic-2
 ![img3.png](img3.png)
 
+Информация по топику __transaction_state
+
+![img10.png](img11.png)
+
+![img10_1.png](img10_1.png)
+
+
 Далее отправляем по 2 сообщения в оба топика и откатываем транзакцию.
 
 ```java
@@ -83,4 +90,8 @@ topic-1
 topic-2
 ![img5.png](img5.png)
 
+Информация по топику __transaction_state
 
+![img12.png](img12.png)
+
+![img12_1.png](img12_1.png)
